@@ -1,8 +1,12 @@
 package net.zomis.stackstv
 
+import groovy.transform.ToString
+
+import java.util.stream.Collectors
+
 class StackSTV {
 
-    private final List<String> candidates = new ArrayList<>()
+    private final List<Candidate> candidates = new ArrayList<>()
     private final List<Vote> votes = new ArrayList<>()
     final int availablePositions
 
@@ -11,7 +15,7 @@ class StackSTV {
     }
 
     void addCandidate(String name) {
-        this.candidates.add(name)
+        this.candidates.add(new Candidate(name: name))
     }
 
     List<String> getCandidates() {
@@ -22,18 +26,36 @@ class StackSTV {
         (float) votes.size() / (availablePositions + 1)
     }
 
-    float[] elect() {
-        float[] candidateSum = new float[candidates.size()]
+    Candidate[] elect() {
         votes.each {
-            it.distribute(candidateSum)
+            it.distribute(candidates)
         }
-        candidateSum
+        List<Candidate> elected = candidates.stream()
+            .filter({candidate -> candidate.votes >= quota})
+            .collect(Collectors.toList())
+        elected.each {
+            println "$it got elected!"
+        }
+        if (elected.isEmpty()) {
+            def loser = candidates.stream().min(Comparator.comparingDouble({it.votes}))
+            println "$loser is out of the race"
+        }
+        candidates
     }
 
+    @ToString(includeNames = true, includePackage = false)
+    static class Candidate {
+        String name
+        float weighting = 1
+        float votes
+    }
+
+    @ToString
     static class Vote {
         int numVotes
         int[] candidates
         float[] distribution
+        float excess
 
         static Vote fromLine(String line) {
             String[] data = line.split()
@@ -48,9 +70,9 @@ class StackSTV {
             vote
         }
 
-        void distribute(float[] candidateScores) {
+        void distribute(List<Candidate> candidateScores) {
             int votingCandidate = candidates[0]
-            candidateScores[votingCandidate] += numVotes
+            candidateScores.get(votingCandidate).votes += numVotes
         }
     }
 
