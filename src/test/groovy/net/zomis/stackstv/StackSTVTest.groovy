@@ -10,6 +10,10 @@ class StackSTVTest {
         StackSTV vote = StackSTV.fromURL(getClass().classLoader.getResource(fileName))
         def result = vote.elect()
         result.each { println it }
+
+        def elected = vote.getCandidates(StackSTV.CandidateState.ELECTED)
+        assert elected.size() == 3
+        assert elected.stream().map({it.name}).toArray() == ['"meagar"', '"Martijn Pieters"', '"Jeremy Banks"']
     }
 
 }

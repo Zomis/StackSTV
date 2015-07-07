@@ -28,6 +28,12 @@ class StackSTV {
         new ArrayList<Vote>(votes)
     }
 
+    List<Candidate> getCandidates(CandidateState state) {
+        candidates.stream()
+            .filter({it.state == state})
+            .collect(Collectors.toList())
+    }
+
     Candidate[] elect() {
         votes*.initPreferences(candidates)
         int electedCount = 0
