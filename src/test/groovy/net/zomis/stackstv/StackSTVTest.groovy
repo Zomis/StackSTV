@@ -6,8 +6,10 @@ class StackSTVTest {
 
     @Test
     void test() {
-        StackSTV vote = StackSTV.fromURL(getClass().classLoader.getResource('votes.dat'))
-        println vote.elect()
+        String fileName = 'stackoverflow-com-2015-election-results.blt'
+        StackSTV vote = StackSTV.fromURL(getClass().classLoader.getResource(fileName))
+        def result = vote.elect()
+        result.each { println it }
     }
 
 }
