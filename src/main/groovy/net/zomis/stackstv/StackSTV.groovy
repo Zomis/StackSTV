@@ -22,8 +22,9 @@ class StackSTV {
         new ArrayList<>(candidates)
     }
 
-    float getQuota() {
-        (float) votes.size() / (availablePositions + 1)
+    double getQuota() {
+        double excess = votes.stream().mapToDouble({it.excess}).sum()
+        (votes.size() - excess) / (availablePositions + 1)
     }
 
     Candidate[] elect() {
@@ -35,6 +36,7 @@ class StackSTV {
             .collect(Collectors.toList())
         elected.each {
             println "$it got elected!"
+            it.weighting *= quota / it.votes
         }
         if (elected.isEmpty()) {
             def loser = candidates.stream().min(Comparator.comparingDouble({it.votes}))
@@ -46,16 +48,16 @@ class StackSTV {
     @ToString(includeNames = true, includePackage = false)
     static class Candidate {
         String name
-        float weighting = 1
-        float votes
+        double weighting = 1
+        double votes
     }
 
     @ToString
     static class Vote {
         int numVotes
         int[] candidates
-        float[] distribution
-        float excess
+        double [] distribution
+        double excess
 
         static Vote fromLine(String line) {
             String[] data = line.split()
