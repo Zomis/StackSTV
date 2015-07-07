@@ -10,6 +10,7 @@ class StackSTVTest {
         println vote.getAvailablePositions()
         println vote.getCandidates()
         println vote.quota
+        println vote.elect()
     }
 
 }

@@ -22,6 +22,14 @@ class StackSTV {
         (float) votes.size() / (availablePositions + 1)
     }
 
+    float[] elect() {
+        float[] candidateSum = new float[candidates.size()]
+        votes.each {
+            it.distribute(candidateSum)
+        }
+        candidateSum
+    }
+
     static class Vote {
         int numVotes
         int[] candidates
@@ -38,6 +46,11 @@ class StackSTV {
             }
             println vote.candidates
             vote
+        }
+
+        void distribute(float[] candidateScores) {
+            int votingCandidate = candidates[0]
+            candidateScores[votingCandidate] += numVotes
         }
     }
 
