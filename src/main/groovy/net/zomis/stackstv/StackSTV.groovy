@@ -18,6 +18,10 @@ class StackSTV {
         new ArrayList<>(candidates)
     }
 
+    float getQuota() {
+        (float) votes.size() / (availablePositions + 1)
+    }
+
     static class Vote {
         int numVotes
         int[] candidates
