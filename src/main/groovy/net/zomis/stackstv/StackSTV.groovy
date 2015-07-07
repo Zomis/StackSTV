@@ -28,21 +28,35 @@ class StackSTV {
     }
 
     Candidate[] elect() {
-        votes.each {
-            it.distribute(candidates)
-        }
-        List<Candidate> elected = candidates.stream()
-            .filter({candidate -> candidate.votes >= quota})
-            .collect(Collectors.toList())
-        elected.each {
-            println "$it got elected!"
-            it.weighting *= quota / it.votes
-        }
-        if (elected.isEmpty()) {
-            def loser = candidates.stream().min(Comparator.comparingDouble({it.votes}))
-            println "$loser is out of the race"
+        int electedCount = 0
+        while (electedCount < availablePositions) {
+            votes.each {
+                it.distribute(candidates)
+            }
+            List<Candidate> elected = candidates.stream()
+                .filter({it.state == CandidateState.HOPEFUL})
+                .filter({candidate -> candidate.votes >= quota})
+                .collect(Collectors.toList())
+            elected.each {
+                electedCount++
+                it.state = CandidateState.ELECTED
+                it.weighting *= quota / it.votes
+                println "$it got elected!"
+            }
+            if (elected.isEmpty()) {
+                Candidate loser = candidates.stream()
+                    .filter({it.state == CandidateState.HOPEFUL})
+                    .min(Comparator.comparingDouble({it.votes})).get()
+                println "$loser is out of the race"
+                loser.state = CandidateState.EXCLUDED
+            }
+            break
         }
         candidates
+    }
+
+    static enum CandidateState {
+        HOPEFUL, EXCLUDED, ELECTED
     }
 
     @ToString(includeNames = true, includePackage = false)
@@ -50,6 +64,7 @@ class StackSTV {
         String name
         double weighting = 1
         double votes
+        CandidateState state = CandidateState.HOPEFUL
     }
 
     @ToString
