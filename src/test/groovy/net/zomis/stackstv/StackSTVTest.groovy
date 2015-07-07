@@ -7,9 +7,6 @@ class StackSTVTest {
     @Test
     void test() {
         StackSTV vote = StackSTV.fromURL(getClass().classLoader.getResource('votes.dat'))
-        println vote.getAvailablePositions()
-        println vote.getCandidates()
-        println vote.quota
         println vote.elect()
     }
 

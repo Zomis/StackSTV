@@ -19,10 +19,6 @@ class StackSTV {
         this.candidates.add(new Candidate(name: name))
     }
 
-    List<String> getCandidates() {
-        new ArrayList<>(candidates)
-    }
-
     double getQuota() {
         double excess = votes.stream().mapToDouble({it.excess}).sum()
         (votes.size() - excess) / (availablePositions + 1)
@@ -38,13 +34,11 @@ class StackSTV {
         int round = 0
         while (electedCount < availablePositions) {
             double roundQuota = quota
-            println "Round ${round++} quota is $roundQuota"
+//            println "Round $round quota is $roundQuota"
+            round++
             candidates*.votes = 0
-            votes.each {
-                it.distribute(candidates)
-            }
+            votes*.distribute()
             List<Candidate> elected = candidates.stream()
-//                .filter({it.state == CandidateState.HOPEFUL})
                 .filter({candidate -> candidate.votes > roundQuota})
                 .collect(Collectors.toList())
             elected.each {
@@ -53,17 +47,17 @@ class StackSTV {
                 }
                 it.state = CandidateState.ELECTED
                 it.weighting *= roundQuota / it.votes
-                println "$it got more than the quota!"
+//                println "$it got more than the quota!"
             }
             if (elected.isEmpty()) {
                 Candidate loser = candidates.stream()
                     .filter({it.state == CandidateState.HOPEFUL})
                     .min(Comparator.comparingDouble({it.votes})).get()
-                println "$loser is out of the race"
+//                println "$loser is out of the race"
                 loser.state = CandidateState.EXCLUDED
                 loser.weighting = 0
             }
-            println "Round Result: $candidates"
+//            println "Round Result: $candidates"
         }
         candidates
     }
@@ -96,19 +90,18 @@ class StackSTV {
             for (int i = 0; i < vote.candidates.length; i++) {
                 vote.candidates[i] = data[i + 1] as int
             }
-            println vote.candidates
             vote
         }
 
-        void distribute(List<Candidate> candidateScores) {
+        void distribute() {
             float remaining = numVotes
-            println "Distributing votes for $this"
+//            println "Distributing votes for $this"
             preferences.eachWithIndex { Candidate entry, int i ->
                 if (entry) {
                     float myScore = remaining * entry.weighting
                     entry.votes += myScore
                     remaining -= myScore
-                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
+//                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
             this.excess = remaining
@@ -128,7 +121,6 @@ class StackSTV {
         BufferedReader reader = url.newReader()
         String[] head = reader.readLine().split()
         int candidates = head[0] as int
-        println candidates
         StackSTV stv = new StackSTV(head[1] as int)
 
         String line = reader.readLine();
@@ -139,7 +131,6 @@ class StackSTV {
         }
         for (int i = 0; i < candidates; i++) {
             String name = reader.readLine()
-            println name
             stv.addCandidate(name)
         }
         stv
