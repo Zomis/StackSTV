@@ -35,7 +35,6 @@ class StackSTV {
     }
 
     Candidate[] elect() {
-        votes*.initPreferences(candidates)
         int electedCount = 0
         int round = 0
         while (electedCount < availablePositions) {
@@ -83,18 +82,20 @@ class StackSTV {
     @ToString
     static class Vote {
         int numVotes
-        int[] candidates
         Candidate[] preferences
         double excess
 
-        static Vote fromLine(String line) {
+        static Vote fromLine(String line, StackSTV election) {
             String[] data = line.split()
             Vote vote = new Vote()
             vote.numVotes = data[0] as int
             int candidateVotes = data.length - 2
-            vote.candidates = new int[candidateVotes]
-            for (int i = 0; i < vote.candidates.length; i++) {
-                vote.candidates[i] = data[i + 1] as int
+            vote.preferences = new Candidate[candidateVotes]
+            for (int i = 0; i < vote.preferences.length; i++) {
+                int candidate = data[i + 1] as int
+                if (candidate > 0) {
+                    vote.preferences[i] = election.candidates.get(candidate - 1)
+                }
             }
             vote
         }
@@ -112,15 +113,6 @@ class StackSTV {
             }
             this.excess = remaining
         }
-
-        @PackageScope void initPreferences(List<Candidate> nominees) {
-            this.preferences = new Candidate[candidates.length]
-            candidates.eachWithIndex { int entry, int i ->
-                if (entry > 0) {
-                    preferences[i] = nominees.get(entry - 1)
-                }
-            }
-        }
     }
 
     static final StackSTV fromURL(URL url) {
@@ -128,16 +120,19 @@ class StackSTV {
         String[] head = reader.readLine().split()
         int candidates = head[0] as int
         StackSTV stv = new StackSTV(head[1] as int)
+        for (int i = 0; i < candidates; i++) {
+            stv.addCandidate("Candidate $i")
+        }
 
         String line = reader.readLine();
         while (line != '0') {
-            Vote vote = Vote.fromLine(line)
+            Vote vote = Vote.fromLine(line, stv)
             stv.votes << vote
             line = reader.readLine();
         }
         for (int i = 0; i < candidates; i++) {
             String name = reader.readLine()
-            stv.addCandidate(name)
+            stv.candidates.get(i).name = name
         }
         stv
     }
