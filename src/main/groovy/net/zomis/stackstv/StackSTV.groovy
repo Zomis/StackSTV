@@ -1,5 +1,6 @@
 package net.zomis.stackstv
 
+import groovy.transform.PackageScope
 import groovy.transform.ToString
 
 import java.util.stream.Collectors
@@ -27,21 +28,32 @@ class StackSTV {
         (votes.size() - excess) / (availablePositions + 1)
     }
 
+    List<Vote> getFinalVotes() {
+        new ArrayList<Vote>(votes)
+    }
+
     Candidate[] elect() {
+        votes*.initPreferences(candidates)
         int electedCount = 0
+        int round = 0
         while (electedCount < availablePositions) {
+            double roundQuota = quota
+            println "Round ${round++} quota is $roundQuota"
+            candidates*.votes = 0
             votes.each {
                 it.distribute(candidates)
             }
             List<Candidate> elected = candidates.stream()
-                .filter({it.state == CandidateState.HOPEFUL})
-                .filter({candidate -> candidate.votes >= quota})
+//                .filter({it.state == CandidateState.HOPEFUL})
+                .filter({candidate -> candidate.votes > roundQuota})
                 .collect(Collectors.toList())
             elected.each {
-                electedCount++
+                if (it.state != CandidateState.ELECTED) {
+                    electedCount++
+                }
                 it.state = CandidateState.ELECTED
-                it.weighting *= quota / it.votes
-                println "$it got elected!"
+                it.weighting *= roundQuota / it.votes
+                println "$it got more than the quota!"
             }
             if (elected.isEmpty()) {
                 Candidate loser = candidates.stream()
@@ -49,8 +61,9 @@ class StackSTV {
                     .min(Comparator.comparingDouble({it.votes})).get()
                 println "$loser is out of the race"
                 loser.state = CandidateState.EXCLUDED
+                loser.weighting = 0
             }
-            break
+            println "Round Result: $candidates"
         }
         candidates
     }
@@ -71,7 +84,7 @@ class StackSTV {
     static class Vote {
         int numVotes
         int[] candidates
-        double [] distribution
+        Candidate[] preferences
         double excess
 
         static Vote fromLine(String line) {
@@ -88,8 +101,26 @@ class StackSTV {
         }
 
         void distribute(List<Candidate> candidateScores) {
-            int votingCandidate = candidates[0]
-            candidateScores.get(votingCandidate).votes += numVotes
+            float remaining = numVotes
+            println "Distributing votes for $this"
+            preferences.eachWithIndex { Candidate entry, int i ->
+                if (entry) {
+                    float myScore = remaining * entry.weighting
+                    entry.votes += myScore
+                    remaining -= myScore
+                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
+                }
+            }
+            this.excess = remaining
+        }
+
+        @PackageScope void initPreferences(List<Candidate> nominees) {
+            this.preferences = new Candidate[candidates.length]
+            candidates.eachWithIndex { int entry, int i ->
+                if (entry > 0) {
+                    preferences[i] = nominees.get(entry - 1)
+                }
+            }
         }
     }
 
