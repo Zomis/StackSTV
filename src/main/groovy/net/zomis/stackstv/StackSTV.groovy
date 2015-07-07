@@ -10,8 +10,12 @@ class StackSTV {
         this.availablePositions = availablePositions
     }
 
-    void addCandidates(String... names) {
+    void addCandidate(String name) {
+        this.candidates.add(name)
+    }
 
+    List<String> getCandidates() {
+        new ArrayList<>(candidates)
     }
 
     static class Vote {
@@ -45,6 +49,11 @@ class StackSTV {
             Vote vote = Vote.fromLine(line)
             stv.votes << vote
             line = reader.readLine();
+        }
+        for (int i = 0; i < candidates; i++) {
+            String name = reader.readLine()
+            println name
+            stv.addCandidate(name)
         }
         stv
     }
