@@ -1,17 +1,16 @@
 package net.zomis.stackstv
 
-import groovy.transform.PackageScope
 import groovy.transform.ToString
 
 import java.util.stream.Collectors
 
-class StackSTV {
+class Election {
 
     private final List<Candidate> candidates = new ArrayList<>()
     private final List<Vote> votes = new ArrayList<>()
     final int availablePositions
 
-    StackSTV(int availablePositions) {
+    Election(int availablePositions) {
         this.availablePositions = availablePositions
     }
 
@@ -85,7 +84,7 @@ class StackSTV {
         Candidate[] preferences
         double excess
 
-        static Vote fromLine(String line, StackSTV election) {
+        static Vote fromLine(String line, Election election) {
             String[] data = line.split()
             Vote vote = new Vote()
             vote.numVotes = data[0] as int
@@ -115,11 +114,11 @@ class StackSTV {
         }
     }
 
-    static final StackSTV fromURL(URL url) {
+    static final Election fromURL(URL url) {
         BufferedReader reader = url.newReader()
         String[] head = reader.readLine().split()
         int candidates = head[0] as int
-        StackSTV stv = new StackSTV(head[1] as int)
+        Election stv = new Election(head[1] as int)
         for (int i = 0; i < candidates; i++) {
             stv.addCandidate("Candidate $i")
         }
