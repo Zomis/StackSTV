@@ -24,8 +24,7 @@ class Election {
         this.candidates.add(new Candidate(name: name))
     }
 
-    double getQuota() {
-        double excess = votes.stream().mapToDouble({it.excess}).sum()
+    double calculateQuota(double excess) {
         (votes.size() - excess) / (availablePositions + 1)
     }
 
@@ -45,10 +44,11 @@ class Election {
 
         int electedCount = 0
         int roundsCount = 0
+        double previousExcess = 0
         while (electedCount < availablePositions) {
             Round round = new Round(roundsCount, maxChoices)
             rounds << round
-            double roundQuota = quota
+            double roundQuota = calculateQuota(previousExcess)
             roundsCount++
             round.quota = roundQuota
             candidates*.votes = 0
@@ -71,6 +71,7 @@ class Election {
                 loser.weighting = 0
             }
             round.candidates = candidates.collect {it.copy()}
+            previousExcess = round.excess
         }
         new ElectionResult(rounds: rounds, candidateResults: candidates)
     }
@@ -95,7 +96,6 @@ class Election {
     static class Vote {
         int numVotes
         Candidate[] preferences
-        double excess
 
         static Vote fromLine(String line, Election election) {
             String[] data = line.split()
@@ -125,7 +125,6 @@ class Election {
 //                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
-            this.excess = remaining
             round.excess += remaining
         }
     }
