@@ -46,14 +46,13 @@ class Election {
         int electedCount = 0
         int roundsCount = 0
         while (electedCount < availablePositions) {
-            double[] usedVotes = new double[maxChoices]
-            Round round = new Round(round: roundsCount)
+            Round round = new Round(roundsCount, maxChoices)
             rounds << round
             double roundQuota = quota
             roundsCount++
             round.quota = roundQuota
             candidates*.votes = 0
-            votes*.distribute(usedVotes)
+            votes*.distribute(round)
             List<Candidate> elected = candidates.stream()
                 .filter({candidate -> candidate.votes > roundQuota})
                 .collect(Collectors.toList())
@@ -72,7 +71,6 @@ class Election {
                 loser.weighting = 0
             }
             round.candidates = candidates.collect {it.copy()}
-            round.usedVotes = usedVotes
         }
         new ElectionResult(rounds: rounds, candidateResults: candidates)
     }
@@ -114,7 +112,7 @@ class Election {
             vote
         }
 
-        void distribute(double[] usedVotes) {
+        void distribute(Round round) {
             double remaining = numVotes
 //            println "Distributing votes for $this"
             int choiceIndex = 0
@@ -123,11 +121,12 @@ class Election {
                     double myScore = remaining * entry.weighting
                     entry.votes += myScore
                     remaining -= myScore
-                    usedVotes[choiceIndex++] += myScore
+                    round.usedVotes[choiceIndex++] += myScore
 //                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
             this.excess = remaining
+            round.excess += remaining
         }
     }
 
