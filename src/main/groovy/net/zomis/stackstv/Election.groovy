@@ -114,7 +114,6 @@ class Election {
 
         void distribute(Round round) {
             double remaining = numVotes
-//            println "Distributing votes for $this"
             int choiceIndex = 0
             preferences.eachWithIndex { Candidate entry, int i ->
                 if (entry) {
@@ -122,7 +121,6 @@ class Election {
                     entry.votes += myScore
                     remaining -= myScore
                     round.usedVotes[choiceIndex++] += myScore
-//                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
             round.excess += remaining
@@ -139,7 +137,6 @@ class Election {
         }
 
         String line = reader.readLine();
-        int maxChoices = 0
         while (line != '0') {
             Vote vote = Vote.fromLine(line, stv)
             stv.addVote(vote)
