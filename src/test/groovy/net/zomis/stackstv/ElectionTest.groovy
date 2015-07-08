@@ -13,6 +13,10 @@ class ElectionTest {
         def elected = result.getCandidates(Election.CandidateState.ELECTED)
         assert elected.size() == 3
         assert elected.stream().map({it.name}).toArray() == ['"meagar"', '"Martijn Pieters"', '"Jeremy Banks"']
+
+        result.rounds.each {
+            println it
+        }
     }
 
 }

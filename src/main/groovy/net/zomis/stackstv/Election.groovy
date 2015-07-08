@@ -8,10 +8,16 @@ class Election {
 
     private final List<Candidate> candidates = new ArrayList<>()
     private final List<Vote> votes = new ArrayList<>()
-    final int availablePositions
+    int availablePositions
+    private int maxChoices
 
     Election(int availablePositions) {
         this.availablePositions = availablePositions
+    }
+
+    void addVote(Vote vote) {
+        this.votes << vote
+        this.maxChoices = Math.max(maxChoices, vote.preferences.length)
     }
 
     void addCandidate(String name) {
@@ -21,10 +27,6 @@ class Election {
     double getQuota() {
         double excess = votes.stream().mapToDouble({it.excess}).sum()
         (votes.size() - excess) / (availablePositions + 1)
-    }
-
-    List<Vote> getFinalVotes() {
-        new ArrayList<Vote>(votes)
     }
 
     static class ElectionResult {
@@ -44,13 +46,14 @@ class Election {
         int electedCount = 0
         int roundsCount = 0
         while (electedCount < availablePositions) {
-            Round round = new Round()
+            double[] usedVotes = new double[maxChoices]
+            Round round = new Round(round: roundsCount)
             rounds << round
             double roundQuota = quota
-//            println "Round $round quota is $roundQuota"
             roundsCount++
+            round.quota = roundQuota
             candidates*.votes = 0
-            votes*.distribute()
+            votes*.distribute(usedVotes)
             List<Candidate> elected = candidates.stream()
                 .filter({candidate -> candidate.votes > roundQuota})
                 .collect(Collectors.toList())
@@ -60,18 +63,16 @@ class Election {
                 }
                 it.state = CandidateState.ELECTED
                 it.weighting *= roundQuota / it.votes
-//                println "$it got more than the quota!"
             }
             if (elected.isEmpty()) {
                 Candidate loser = candidates.stream()
                     .filter({it.state == CandidateState.HOPEFUL})
                     .min(Comparator.comparingDouble({it.votes})).get()
-//                println "$loser is out of the race"
                 loser.state = CandidateState.EXCLUDED
                 loser.weighting = 0
             }
             round.candidates = candidates.collect {it.copy()}
-//            println "Round Result: $candidates"
+            round.usedVotes = usedVotes
         }
         new ElectionResult(rounds: rounds, candidateResults: candidates)
     }
@@ -113,14 +114,15 @@ class Election {
             vote
         }
 
-        void distribute() {
-            float remaining = numVotes
+        void distribute(double[] usedVotes) {
+            double remaining = numVotes
 //            println "Distributing votes for $this"
             preferences.eachWithIndex { Candidate entry, int i ->
                 if (entry) {
-                    float myScore = remaining * entry.weighting
+                    double myScore = remaining * entry.weighting
                     entry.votes += myScore
                     remaining -= myScore
+                    usedVotes[i] += myScore
 //                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
@@ -138,9 +140,10 @@ class Election {
         }
 
         String line = reader.readLine();
+        int maxChoices = 0
         while (line != '0') {
             Vote vote = Vote.fromLine(line, stv)
-            stv.votes << vote
+            stv.addVote(vote)
             line = reader.readLine();
         }
         for (int i = 0; i < candidates; i++) {
