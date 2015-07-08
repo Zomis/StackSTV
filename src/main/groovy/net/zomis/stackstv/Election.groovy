@@ -117,12 +117,13 @@ class Election {
         void distribute(double[] usedVotes) {
             double remaining = numVotes
 //            println "Distributing votes for $this"
+            int choiceIndex = 0
             preferences.eachWithIndex { Candidate entry, int i ->
                 if (entry) {
                     double myScore = remaining * entry.weighting
                     entry.votes += myScore
                     remaining -= myScore
-                    usedVotes[i] += myScore
+                    usedVotes[choiceIndex++] += myScore
 //                    println "$this gives $myScore to ${entry.name}, remaining is now $remaining"
                 }
             }
