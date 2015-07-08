@@ -17,6 +17,7 @@ class ElectionTest {
         result.rounds.each {
             println it
         }
+        ResultExport.export(new File(fileName + '.html'), fileName, result)
     }
 
 }
