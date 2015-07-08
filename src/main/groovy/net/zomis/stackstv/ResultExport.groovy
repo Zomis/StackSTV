@@ -12,12 +12,16 @@ class ResultExport {
     static void export(File file, String name, ElectionResult results) {
         TemplateConfiguration config = new TemplateConfiguration()
         config.useDoubleQuotes = true
-        MarkupTemplateEngine engine = new MarkupTemplateEngine()
+        config.autoIndent = true
+        config.autoNewLine = true
+        config.baseTemplateClass = MyTemplate
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(config)
         def template = engine.createTemplate(ResultExport.classLoader.getResource('flot.groovy'))
         Map<String, Object> model = new HashMap<>()
         model.put('title', name)
         model.put('rounds', results.rounds)
         model.put('candidates', results.candidateResults)
+        model.put('result', results)
         template.make(model).writeTo(new PrintWriter(file))
     }
 
