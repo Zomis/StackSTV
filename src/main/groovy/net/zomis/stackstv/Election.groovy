@@ -27,19 +27,28 @@ class Election {
         new ArrayList<Vote>(votes)
     }
 
-    List<Candidate> getCandidates(CandidateState state) {
-        candidates.stream()
-            .filter({it.state == state})
-            .collect(Collectors.toList())
+    static class ElectionResult {
+        List<Round> rounds
+        List<Candidate> candidateResults
+
+        List<Candidate> getCandidates(CandidateState state) {
+            candidateResults.stream()
+                    .filter({it.state == state})
+                    .collect(Collectors.toList())
+        }
     }
 
-    Candidate[] elect() {
+    ElectionResult elect() {
+        List<Round> rounds = new ArrayList<>()
+
         int electedCount = 0
-        int round = 0
+        int roundsCount = 0
         while (electedCount < availablePositions) {
+            Round round = new Round()
+            rounds << round
             double roundQuota = quota
 //            println "Round $round quota is $roundQuota"
-            round++
+            roundsCount++
             candidates*.votes = 0
             votes*.distribute()
             List<Candidate> elected = candidates.stream()
@@ -61,9 +70,10 @@ class Election {
                 loser.state = CandidateState.EXCLUDED
                 loser.weighting = 0
             }
+            round.candidates = candidates.collect {it.copy()}
 //            println "Round Result: $candidates"
         }
-        candidates
+        new ElectionResult(rounds: rounds, candidateResults: candidates)
     }
 
     static enum CandidateState {
@@ -76,6 +86,10 @@ class Election {
         double weighting = 1
         double votes
         CandidateState state = CandidateState.HOPEFUL
+
+        Candidate copy() {
+            new Candidate(name: name, weighting: weighting, votes: votes, state: state)
+        }
     }
 
     @ToString
