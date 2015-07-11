@@ -6,10 +6,10 @@ import java.util.stream.Collectors
 
 class Election {
 
-    private final List<Candidate> candidates = new ArrayList<>()
-    private final List<Vote> votes = new ArrayList<>()
+    final List<Candidate> candidates = new ArrayList<>()
+    final List<Vote> votes = new ArrayList<>()
     int availablePositions
-    private int maxChoices
+    int maxChoices
 
     Election(int availablePositions) {
         this.availablePositions = availablePositions
@@ -39,45 +39,12 @@ class Election {
         }
     }
 
-    ElectionResult elect() {
-        List<Round> rounds = new ArrayList<>()
-
-        int electedCount = 0
-        int roundsCount = 0
-        double previousExcess = 0
-        while (electedCount < availablePositions) {
-            Round round = new Round(roundsCount, maxChoices)
-            rounds << round
-            double roundQuota = calculateQuota(previousExcess)
-            roundsCount++
-            round.quota = roundQuota
-            candidates*.votes = 0
-            votes*.distribute(round)
-            List<Candidate> elected = candidates.stream()
-                .filter({candidate -> candidate.votes > roundQuota})
-                .collect(Collectors.toList())
-            elected.each {
-                if (it.state != CandidateState.ELECTED) {
-                    electedCount++
-                }
-                it.state = CandidateState.ELECTED
-                it.weighting *= roundQuota / it.votes
-            }
-            if (elected.isEmpty()) {
-                Candidate loser = candidates.stream()
-                    .filter({it.state == CandidateState.HOPEFUL})
-                    .min(Comparator.comparingDouble({it.votes})).get()
-                loser.state = CandidateState.EXCLUDED
-                loser.weighting = 0
-            }
-            round.candidates = candidates.collect {it.copy()}
-            previousExcess = round.excess
-        }
-        new ElectionResult(rounds: rounds, candidateResults: candidates)
+    ElectionResult elect(ElectionStrategy strategy) {
+        strategy.elect(this)
     }
 
     static enum CandidateState {
-        HOPEFUL, EXCLUDED, ELECTED
+        HOPEFUL, EXCLUDED, ALMOST, NEWLY_ELECTED, ELECTED
     }
 
     @ToString(includeNames = true, includePackage = false)

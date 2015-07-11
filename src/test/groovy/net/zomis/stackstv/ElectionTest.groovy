@@ -6,7 +6,8 @@ class ElectionTest {
 
     Election.ElectionResult runElection(String fileName) {
         Election vote = Election.fromURL(getClass().classLoader.getResource(fileName))
-        vote.elect()
+//        vote.elect(new SimonElection())
+        vote.elect(new PascalElection())
     }
 
     @Test
