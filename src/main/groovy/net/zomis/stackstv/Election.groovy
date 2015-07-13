@@ -11,7 +11,7 @@ class Election {
     int availablePositions
     int maxChoices
 
-    Election(int availablePositions) {
+    private Election(int availablePositions) {
         this.availablePositions = availablePositions
     }
 
@@ -34,8 +34,8 @@ class Election {
 
         List<Candidate> getCandidates(CandidateState state) {
             candidateResults.stream()
-                    .filter({it.state == state})
-                    .collect(Collectors.toList())
+                .filter({it.state == state})
+                .collect(Collectors.toList())
         }
     }
 
@@ -94,7 +94,7 @@ class Election {
         }
     }
 
-    static final Election fromURL(URL url) {
+    static final ElectionResult fromURL(URL url, ElectionStrategy strategy) {
         BufferedReader reader = url.newReader()
         String[] head = reader.readLine().split()
         int candidates = head[0] as int
@@ -113,7 +113,7 @@ class Election {
             String name = reader.readLine()
             stv.candidates.get(i).name = name
         }
-        stv
+        stv.elect(strategy)
     }
 
 }

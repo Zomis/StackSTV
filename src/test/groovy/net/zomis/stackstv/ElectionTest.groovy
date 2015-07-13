@@ -4,10 +4,11 @@ import org.junit.Test
 
 class ElectionTest {
 
+    private static final ElectionStrategy STRATEGY = new SimonElection()
+
     Election.ElectionResult runElection(String fileName) {
-        Election vote = Election.fromURL(getClass().classLoader.getResource(fileName))
-//        vote.elect(new SimonElection())
-        vote.elect(new PascalElection())
+        Election.ElectionResult result = Election.fromURL(getClass().classLoader.getResource(fileName), STRATEGY)
+        result
     }
 
     @Test
