@@ -1,9 +1,11 @@
-package net.zomis.stackstv
+package net.zomis.stackstv.export
 
 import groovy.json.JsonBuilder
 import groovy.text.markup.BaseTemplate
 import groovy.text.markup.MarkupTemplateEngine
 import groovy.text.markup.TemplateConfiguration
+import net.zomis.stackstv.Election
+import net.zomis.stackstv.Round
 
 abstract class MyTemplate extends BaseTemplate {
     private final Election.ElectionResult result

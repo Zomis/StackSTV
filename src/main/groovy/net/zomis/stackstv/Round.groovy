@@ -16,5 +16,4 @@ class Round {
         this.usedVotes = new double[maxChoices]
     }
 
-
 }

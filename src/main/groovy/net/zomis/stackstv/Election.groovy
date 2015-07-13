@@ -100,7 +100,7 @@ class Election {
         int candidates = head[0] as int
         Election stv = new Election(head[1] as int)
         for (int i = 0; i < candidates; i++) {
-            stv.addCandidate("Candidate $i")
+            stv.addCandidate("Candidate $i") // use a temporary name at first. real names are at the end of the file
         }
 
         String line = reader.readLine();

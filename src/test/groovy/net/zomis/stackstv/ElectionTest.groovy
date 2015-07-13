@@ -1,5 +1,6 @@
 package net.zomis.stackstv
 
+import net.zomis.stackstv.export.ResultExport
 import org.junit.Test
 
 class ElectionTest {
