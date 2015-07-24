@@ -30,4 +30,15 @@ class ElectionTest {
         ResultExport.export(new File(new File('output'), fileName + '.html'), fileName, result)
     }
 
+    @Test
+    void testCR() {
+        String fileName = 'codereview-stackexchange-com-2015-election-results.blt'
+        def result = runElection(fileName)
+
+        def elected = result.getCandidates(Election.CandidateState.ELECTED)
+        assert elected.size() == 4
+        ResultExport.export(new File(new File('output'), fileName + '.html'), fileName, result)
+//        assert elected.stream().map({it.name}).toArray() == ['"meagar"', '"Martijn Pieters"', '"Jeremy Banks"']
+    }
+
 }
