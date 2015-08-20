@@ -3,6 +3,8 @@ package net.zomis.stackstv
 import groovy.transform.ToString
 
 import java.util.stream.Collectors
+import net.zomis.meta.IteratorCategory
+
 
 class Election {
 
@@ -95,24 +97,26 @@ class Election {
     }
 
     static final ElectionResult fromURL(URL url, ElectionStrategy strategy) {
-        BufferedReader reader = url.newReader()
-        String[] head = reader.readLine().split()
-        int candidates = head[0] as int
-        Election stv = new Election(head[1] as int)
-        for (int i = 0; i < candidates; i++) {
-            stv.addCandidate("Candidate $i") // use a temporary name at first. real names are at the end of the file
+        def reader = url.newReader()
+        def (candidates, positions) = reader
+            .readLine()
+            .split()
+            .collect { it as int }
+
+        def stv = new Election(positions)
+
+        (0..<candidates).each { 
+            stv.addCandidate("Candidate $it") // use a temporary name at first. real names are at the end of the file
         }
 
-        String line = reader.readLine();
-        while (line != '0') {
-            Vote vote = Vote.fromLine(line, stv)
-            stv.addVote(vote)
-            line = reader.readLine();
+        use(IteratorCategory) {
+            reader.iterator().while { line -> line != '0' }.call { line ->
+                stv.addVote Vote.fromLine(line, stv)
+            }.eachWithIndex { line, i -> 
+                if(i < candidates) stv.candidates.get(i).name = line 
+            }
         }
-        for (int i = 0; i < candidates; i++) {
-            String name = reader.readLine()
-            stv.candidates.get(i).name = name
-        }
+
         stv.elect(strategy)
     }
 
