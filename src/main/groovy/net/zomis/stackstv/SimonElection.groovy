@@ -1,7 +1,5 @@
 package net.zomis.stackstv
 
-import java.util.stream.Collectors
-
 class SimonElection implements ElectionStrategy {
 
     @Override
@@ -19,20 +17,19 @@ class SimonElection implements ElectionStrategy {
             round.quota = roundQuota
             election.candidates*.votes = 0
             election.votes*.distribute(round)
-            List<Candidate> elected = election.candidates.stream()
-                    .filter({candidate -> candidate.votes > roundQuota})
-                    .collect(Collectors.toList())
-            elected.each {
-                if (it.state != Election.CandidateState.ELECTED) {
-                    electedCount++
+            List<Candidate> elected = election.candidates
+                .findAll {candidate -> candidate.votes > roundQuota}
+                .each {
+                    if (it.state != Election.CandidateState.ELECTED) {
+                        electedCount++
+                    }
+                    it.state = Election.CandidateState.ELECTED
+                    it.weighting *= roundQuota / it.votes
                 }
-                it.state = Election.CandidateState.ELECTED
-                it.weighting *= roundQuota / it.votes
-            }
             if (elected.isEmpty()) {
-                Candidate loser = election.candidates.stream()
-                        .filter({it.state == Election.CandidateState.HOPEFUL})
-                        .min(Comparator.comparingDouble({it.votes})).get()
+                Candidate loser = election.candidates
+                    .findAll {it.state == Election.CandidateState.HOPEFUL}
+                    .min {it.votes}
                 loser.state = Election.CandidateState.EXCLUDED
                 loser.weighting = 0
             }
