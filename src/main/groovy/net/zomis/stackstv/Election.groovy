@@ -98,26 +98,29 @@ class Election {
 
     static final ElectionResult fromURL(URL url, ElectionStrategy strategy) {
         def reader = url.newReader()
-        def (candidates, positions) = reader
-            .readLine()
-            .split()
-            .collect { it as int }
 
-        def stv = new Election(positions)
+        reader.withReader {
+            def (candidates, positions) = reader
+                .readLine()
+                .split()
+                .collect { it as int }
 
-        candidates.times { 
-            stv.addCandidate("Candidate $it") // use a temporary name at first. real names are at the end of the file
-        }
+            def stv = new Election(positions)
 
-        use(IteratorCategory) {
-            reader.iterator().while { line -> line != '0' }.call { line ->
-                stv.addVote Vote.fromLine(line, stv)
-            }.eachWithIndex { line, i -> 
-                if(i < candidates) stv.candidates.get(i).name = line 
+            candidates.times { 
+                stv.addCandidate("Candidate $it") // use a temporary name at first. real names are at the end of the file
             }
-        }
 
-        stv.elect(strategy)
+            use(IteratorCategory) {
+                reader.iterator().while { line -> line != '0' }.call { line ->
+                    stv.addVote Vote.fromLine(line, stv)
+                }.eachWithIndex { line, i -> 
+                    if(i < candidates) stv.candidates.get(i).name = line 
+                }
+            }
+
+            return stv
+        }.elect(strategy)
     }
 
 }
