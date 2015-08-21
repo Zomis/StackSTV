@@ -114,8 +114,8 @@ class Election {
             use(IteratorCategory) {
                 reader.iterator().while { line -> line != '0' }.call { line ->
                     stv.addVote Vote.fromLine(line, stv)
-                }.eachWithIndex { line, i -> 
-                    if(i < candidates) stv.candidates.get(i).name = line 
+                }.upto(candidates) { line, i -> 
+                    stv.candidates.get(i).name = line 
                 }
             }
 

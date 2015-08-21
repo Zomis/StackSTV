@@ -33,4 +33,30 @@ class IteratorCategory {
             return iter
         }.curry(this)
     }
+
+    /*
+     * Similar to Number.upto(Number, Closure), executes the Closure
+     * UP TO a specified number of times. However, instead of returning
+     * the Closure's return value, it returns the Iterator where
+     * it left off.
+     *
+     * Example usage:
+     * use(IteratorCategory) {
+     *   def iter = reader.iterator().upto(5) {it, i -> println "$i - $it" }
+     * }
+     *
+     * @param to number of times to iterate
+     * @param closure to execute. Called with Iterator.next() and index.
+     * @return Iterator
+     */
+    Iterator upto(int to, Closure closure) {
+        int i = 0
+
+        while(this.hasNext() && i < to) {
+            closure this.next(), i
+            i++
+        }
+
+        return this
+    }
 }
