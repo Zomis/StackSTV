@@ -102,15 +102,17 @@ class Vote {
 
     void distribute(Round round) {
         double remaining = numVotes
-        int choiceIndex = 0
-        preferences.eachWithIndex { Candidate entry, int i ->
-            if (entry) {
-                double myScore = remaining * entry.weighting
-                entry.votes += myScore
-                remaining -= myScore
-                round.usedVotes[choiceIndex++] += myScore
-            }
+
+        preferences.collect {candidate ->
+            def score = remaining * candidate.weighting
+            candidate.votes += score
+            remaining -= score
+
+            return score
+        }.eachWithIndex {score, i ->
+            round.usedVotes[i] += score
         }
+
         round.excess += remaining
     }
 }
