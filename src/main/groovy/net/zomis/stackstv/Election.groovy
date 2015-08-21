@@ -105,7 +105,7 @@ class Election {
 
         def stv = new Election(positions)
 
-        (0..<candidates).each { 
+        candidates.times { 
             stv.addCandidate("Candidate $it") // use a temporary name at first. real names are at the end of the file
         }
 
