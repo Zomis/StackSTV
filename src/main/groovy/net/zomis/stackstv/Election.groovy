@@ -19,7 +19,7 @@ class Election {
 
     Election leftShift(Vote vote) {
         this.votes << vote
-        this.maxChoices = Math.max(maxChoices, vote.preferences.length)
+        this.maxChoices = Math.max(maxChoices, vote.preferences.size())
         
         return this
     }
@@ -89,21 +89,15 @@ class ElectionResult {
 @ToString
 class Vote {
     int numVotes
-    Candidate[] preferences
+    List<Candidate> preferences
 
     static Vote fromLine(String line, Election election) {
-        String[] data = line.split()
-        Vote vote = new Vote()
-        vote.numVotes = data[0] as int
-        int candidateVotes = data.length - 2
-        vote.preferences = new Candidate[candidateVotes]
-        for (int i = 0; i < vote.preferences.length; i++) {
-            int candidate = data[i + 1] as int
-            if (candidate > 0) {
-                vote.preferences[i] = election.candidates.get(candidate - 1)
-            }
-        }
-        vote
+        def data = line.split().collect { it as int }
+        def candidates = data[1..-2]
+
+        new Vote(
+            numVotes: data.head(),
+            preferences: candidates.collect { election.candidates[it - 1] }        )
     }
 
     void distribute(Round round) {
