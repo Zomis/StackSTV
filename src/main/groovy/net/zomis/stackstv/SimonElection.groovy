@@ -4,39 +4,60 @@ class SimonElection implements ElectionStrategy {
 
     @Override
     ElectionResult elect(Election election) {
-        List<Round> rounds = new ArrayList<>()
+        def rounds = [] 
+        def electedCount = 0
+        def roundsCount = 0
+        def previousExcess = 0
 
-        int electedCount = 0
-        int roundsCount = 0
-        double previousExcess = 0
-        while (electedCount < election.availablePositions) {
-            Round round = new Round(roundsCount, election.maxChoices)
+        def positionsAreAvailable = {
+            electedCount < election.availablePositions
+        }
+
+        def createRoundAndQuota = {
+            def round = new Round(roundsCount, election.maxChoices)
+            def roundQuota = election.calculateQuota(previousExcess)
+
             rounds << round
-            double roundQuota = election.calculateQuota(previousExcess)
             roundsCount++
             round.quota = roundQuota
             election.candidates*.votes = 0
             election.votes*.distribute(round)
-            List<Candidate> elected = election.candidates
-                .findAll {candidate -> candidate.votes > roundQuota}
-                .each {
-                    if (it.state != Election.CandidateState.ELECTED) {
-                        electedCount++
-                    }
-                    it.state = Election.CandidateState.ELECTED
-                    it.weighting *= roundQuota / it.votes
+            
+            [round, roundQuota]
+        }
+
+        def electCandidate = {quota, candidate ->
+            candidate.with {
+                if (state != Election.CandidateState.ELECTED) {
+                    electedCount++
                 }
-            if (elected.isEmpty()) {
-                Candidate loser = election.candidates
+
+                state = Election.CandidateState.ELECTED
+                weighting *= quota / votes
+            }
+        }
+
+        while (positionsAreAvailable()) {
+            def (round, roundQuota) = createRoundAndQuota()
+            def elected = election.candidates
+                .findAll {candidate -> candidate.votes > roundQuota}
+                .each electCandidate.curry(roundQuota)
+
+            if(!elected) {
+                election.candidates
                     .findAll {it.state == Election.CandidateState.HOPEFUL}
                     .min {it.votes}
-                loser.state = Election.CandidateState.EXCLUDED
-                loser.weighting = 0
+                    .with {
+                        state = Election.CandidateState.EXCLUDED
+                        weighting = 0
+                    }
             }
+
             round.candidates = election.candidates.collect {it.clone()}
             previousExcess = round.excess
         }
-        new ElectionResult(rounds: rounds, candidateResults: election.candidates)
+
+        [rounds, election.candidates] as ElectionResult
     }
 
 }

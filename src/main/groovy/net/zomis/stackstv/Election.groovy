@@ -78,6 +78,16 @@ class ElectionResult {
     List<Round> rounds
     List<Candidate> candidateResults
 
+    ElectionResult(List<Round> rounds, List<Candidate> results) {
+        this.rounds = rounds
+        candidateResults = results
+    }
+
+    ElectionResult(Map map) {
+        rounds = map.rounds
+        candidateResults = map.candidateResults
+    }
+
     List<Candidate> getCandidates(Election.CandidateState state) {
         candidateResults.findAll {it.state == state}
     }
