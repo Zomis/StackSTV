@@ -5,10 +5,12 @@ import groovy.text.markup.BaseTemplate
 import groovy.text.markup.MarkupTemplateEngine
 import groovy.text.markup.TemplateConfiguration
 import net.zomis.stackstv.Election
+import net.zomis.stackstv.ElectionResult
+import net.zomis.stackstv.Candidate
 import net.zomis.stackstv.Round
 
 abstract class MyTemplate extends BaseTemplate {
-    private final Election.ElectionResult result
+    private final ElectionResult result
     public MyTemplate(
             final MarkupTemplateEngine templateEngine,
             final Map model,
@@ -23,7 +25,7 @@ abstract class MyTemplate extends BaseTemplate {
         def json = new JsonBuilder()
         def res = result
         json {
-            res.candidateResults.eachWithIndex { Election.Candidate candidate, int i ->
+            res.candidateResults.eachWithIndex { Candidate candidate, int i ->
                 "candidate-$i" {
                     label candidate.name
                     def array = new double[res.rounds.size()][2]

@@ -6,7 +6,7 @@ package net.zomis.stackstv
 class PascalElection implements ElectionStrategy {
 
     @Override
-    Election.ElectionResult elect(Election election) {
+    ElectionResult elect(Election election) {
         List<Round> rounds = []
         int numElected = 0
         int roundId = 0
@@ -17,7 +17,7 @@ class PascalElection implements ElectionStrategy {
 //                    surpluses until no more can be done or all
 //                    seats are filled}
             while (true) {
-                List<Election.Candidate> elected = electSomeone(election, numElected)
+                List<Candidate> elected = electSomeone(election, numElected)
                 numElected += elected.size()
                 if (elected.isEmpty() || (numElected >= election.availablePositions)) {
                     // do-while doesn't work in Groovy, so using this method instead
@@ -26,7 +26,7 @@ class PascalElection implements ElectionStrategy {
             }
 
             if (numElected < election.availablePositions) {
-                Optional<Election.Candidate> loser = election.candidates.stream()
+                Optional<Candidate> loser = election.candidates.stream()
                         .filter({it.state == Election.CandidateState.HOPEFUL})
                         .min(Comparator.comparingDouble({it.votes}))
                 if (loser.isPresent()) {
@@ -45,10 +45,10 @@ class PascalElection implements ElectionStrategy {
 //                }
 //            }
         }
-        new Election.ElectionResult(candidateResults: election.candidates, rounds: rounds)
+        new ElectionResult(candidateResults: election.candidates, rounds: rounds)
     }
 
-    List<Election.Candidate> electSomeone(Election election, int numElected) {
+    List<Candidate> electSomeone(Election election, int numElected) {
         boolean converged = false
         double quota = 0
         double excess = 0
@@ -66,7 +66,7 @@ class PascalElection implements ElectionStrategy {
                 int candIndex = 0
                 ended = false
                 while (candIndex < it.preferences.length) {
-                    Election.Candidate candidate = it.preferences[candIndex]
+                    Candidate candidate = it.preferences[candIndex]
                     if (candidate) {
                         if (!ended && candidate.weighting > 0.0) {
                             ended = candidate.state == Election.CandidateState.HOPEFUL
@@ -91,7 +91,7 @@ class PascalElection implements ElectionStrategy {
             }
             converged = true
 
-            election.candidates.each { Election.Candidate candidate ->
+            election.candidates.each { Candidate candidate ->
                 if (candidate.state == Election.CandidateState.ELECTED) {
                     double temp = (double) quota / candidate.votes
                     if (temp > 1.00001 || temp < 0.99999) {
@@ -125,7 +125,7 @@ class PascalElection implements ElectionStrategy {
             count--
         }
 
-        List<Election.Candidate> newlyElected = []
+        List<Candidate> newlyElected = []
         election.candidates.each {
             if (it.state == Election.CandidateState.ALMOST) {
                 it.state = Election.CandidateState.NEWLY_ELECTED

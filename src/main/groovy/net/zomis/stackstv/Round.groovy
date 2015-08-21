@@ -6,7 +6,7 @@ import groovy.transform.ToString
 class Round {
 
     int round
-    List<Election.Candidate> candidates = new ArrayList<>()
+    List<Candidate> candidates = new ArrayList<>()
     double quota
     double[] usedVotes
     double excess

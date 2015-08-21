@@ -5,7 +5,7 @@ import java.util.stream.Collectors
 class SimonElection implements ElectionStrategy {
 
     @Override
-    Election.ElectionResult elect(Election election) {
+    ElectionResult elect(Election election) {
         List<Round> rounds = new ArrayList<>()
 
         int electedCount = 0
@@ -19,7 +19,7 @@ class SimonElection implements ElectionStrategy {
             round.quota = roundQuota
             election.candidates*.votes = 0
             election.votes*.distribute(round)
-            List<Election.Candidate> elected = election.candidates.stream()
+            List<Candidate> elected = election.candidates.stream()
                     .filter({candidate -> candidate.votes > roundQuota})
                     .collect(Collectors.toList())
             elected.each {
@@ -30,7 +30,7 @@ class SimonElection implements ElectionStrategy {
                 it.weighting *= roundQuota / it.votes
             }
             if (elected.isEmpty()) {
-                Election.Candidate loser = election.candidates.stream()
+                Candidate loser = election.candidates.stream()
                         .filter({it.state == Election.CandidateState.HOPEFUL})
                         .min(Comparator.comparingDouble({it.votes})).get()
                 loser.state = Election.CandidateState.EXCLUDED
@@ -39,7 +39,7 @@ class SimonElection implements ElectionStrategy {
             round.candidates = election.candidates.collect {it.copy()}
             previousExcess = round.excess
         }
-        new Election.ElectionResult(rounds: rounds, candidateResults: election.candidates)
+        new ElectionResult(rounds: rounds, candidateResults: election.candidates)
     }
 
 }

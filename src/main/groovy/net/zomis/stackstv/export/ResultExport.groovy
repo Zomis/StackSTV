@@ -2,7 +2,7 @@ package net.zomis.stackstv.export
 
 import groovy.text.markup.MarkupTemplateEngine
 import groovy.text.markup.TemplateConfiguration
-import net.zomis.stackstv.Election.ElectionResult
+import net.zomis.stackstv.ElectionResult
 
 /**
  * A class for exporting a ElectionResult to HTML, JavaScript and flot

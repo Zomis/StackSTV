@@ -30,17 +30,6 @@ class Election {
         (votes.size() - excess) / (availablePositions + 1)
     }
 
-    static class ElectionResult {
-        List<Round> rounds
-        List<Candidate> candidateResults
-
-        List<Candidate> getCandidates(CandidateState state) {
-            candidateResults.stream()
-                .filter({it.state == state})
-                .collect(Collectors.toList())
-        }
-    }
-
     ElectionResult elect(ElectionStrategy strategy) {
         strategy.elect(this)
     }
@@ -49,53 +38,7 @@ class Election {
         HOPEFUL, EXCLUDED, ALMOST, NEWLY_ELECTED, ELECTED
     }
 
-    @ToString(includeNames = true, includePackage = false)
-    static class Candidate {
-        String name
-        double weighting = 1
-        double votes
-        CandidateState state = CandidateState.HOPEFUL
-
-        Candidate copy() {
-            new Candidate(name: name, weighting: weighting, votes: votes, state: state)
-        }
-    }
-
-    @ToString
-    static class Vote {
-        int numVotes
-        Candidate[] preferences
-
-        static Vote fromLine(String line, Election election) {
-            String[] data = line.split()
-            Vote vote = new Vote()
-            vote.numVotes = data[0] as int
-            int candidateVotes = data.length - 2
-            vote.preferences = new Candidate[candidateVotes]
-            for (int i = 0; i < vote.preferences.length; i++) {
-                int candidate = data[i + 1] as int
-                if (candidate > 0) {
-                    vote.preferences[i] = election.candidates.get(candidate - 1)
-                }
-            }
-            vote
-        }
-
-        void distribute(Round round) {
-            double remaining = numVotes
-            int choiceIndex = 0
-            preferences.eachWithIndex { Candidate entry, int i ->
-                if (entry) {
-                    double myScore = remaining * entry.weighting
-                    entry.votes += myScore
-                    remaining -= myScore
-                    round.usedVotes[choiceIndex++] += myScore
-                }
-            }
-            round.excess += remaining
-        }
-    }
-
+       
     static final ElectionResult fromURL(URL url, ElectionStrategy strategy) {
         def reader = url.newReader()
 
@@ -123,4 +66,62 @@ class Election {
         }.elect(strategy)
     }
 
+}
+
+class ElectionResult {
+    List<Round> rounds
+    List<Candidate> candidateResults
+
+    List<Candidate> getCandidates(Election.CandidateState state) {
+        candidateResults.stream()
+            .filter({it.state == state})
+            .collect(Collectors.toList())
+    }
+}
+
+@ToString
+class Vote {
+    int numVotes
+    Candidate[] preferences
+
+    static Vote fromLine(String line, Election election) {
+        String[] data = line.split()
+        Vote vote = new Vote()
+        vote.numVotes = data[0] as int
+        int candidateVotes = data.length - 2
+        vote.preferences = new Candidate[candidateVotes]
+        for (int i = 0; i < vote.preferences.length; i++) {
+            int candidate = data[i + 1] as int
+            if (candidate > 0) {
+                vote.preferences[i] = election.candidates.get(candidate - 1)
+            }
+        }
+        vote
+    }
+
+    void distribute(Round round) {
+        double remaining = numVotes
+        int choiceIndex = 0
+        preferences.eachWithIndex { Candidate entry, int i ->
+            if (entry) {
+                double myScore = remaining * entry.weighting
+                entry.votes += myScore
+                remaining -= myScore
+                round.usedVotes[choiceIndex++] += myScore
+            }
+        }
+        round.excess += remaining
+    }
+}
+
+@ToString(includeNames = true, includePackage = false)
+class Candidate {
+    String name
+    double weighting = 1
+    double votes
+    Election.CandidateState state = Election.CandidateState.HOPEFUL
+
+    Candidate copy() {
+        new Candidate(name: name, weighting: weighting, votes: votes, state: state)
+    }
 }

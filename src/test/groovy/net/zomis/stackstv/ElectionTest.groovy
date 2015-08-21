@@ -7,8 +7,8 @@ class ElectionTest {
 
     private static final ElectionStrategy STRATEGY = new SimonElection()
 
-    Election.ElectionResult runElection(String fileName) {
-        Election.ElectionResult result = Election.fromURL(getClass().classLoader.getResource(fileName), STRATEGY)
+    ElectionResult runElection(String fileName) {
+        ElectionResult result = Election.fromURL(getClass().classLoader.getResource(fileName), STRATEGY)
         result
     }
 
