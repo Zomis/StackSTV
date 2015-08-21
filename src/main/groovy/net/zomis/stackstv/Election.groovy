@@ -118,13 +118,11 @@ class Vote {
 }
 
 @ToString(includeNames = true, includePackage = false)
-class Candidate {
+class Candidate implements Cloneable {
     String name
     double weighting = 1
     double votes
     Election.CandidateState state = Election.CandidateState.HOPEFUL
 
-    Candidate copy() {
-        new Candidate(name: name, weighting: weighting, votes: votes, state: state)
-    }
+    Object clone() { super.clone() }
 }

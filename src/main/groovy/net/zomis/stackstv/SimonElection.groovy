@@ -36,7 +36,7 @@ class SimonElection implements ElectionStrategy {
                 loser.state = Election.CandidateState.EXCLUDED
                 loser.weighting = 0
             }
-            round.candidates = election.candidates.collect {it.copy()}
+            round.candidates = election.candidates.collect {it.clone()}
             previousExcess = round.excess
         }
         new ElectionResult(rounds: rounds, candidateResults: election.candidates)
