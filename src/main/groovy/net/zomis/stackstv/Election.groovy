@@ -2,7 +2,6 @@ package net.zomis.stackstv
 
 import groovy.transform.ToString
 
-import java.util.stream.Collectors
 import net.zomis.meta.IteratorCategory
 
 
@@ -80,9 +79,7 @@ class ElectionResult {
     List<Candidate> candidateResults
 
     List<Candidate> getCandidates(Election.CandidateState state) {
-        candidateResults.stream()
-            .filter({it.state == state})
-            .collect(Collectors.toList())
+        candidateResults.findAll {it.state == state}
     }
 }
 
