@@ -17,13 +17,17 @@ class Election {
         this.availablePositions = availablePositions
     }
 
-    void addVote(Vote vote) {
+    Election leftShift(Vote vote) {
         this.votes << vote
         this.maxChoices = Math.max(maxChoices, vote.preferences.length)
+        
+        return this
     }
 
-    void addCandidate(String name) {
-        this.candidates.add(new Candidate(name: name))
+    Election leftShift(Candidate candidate) {
+        this.candidates << candidate
+
+        return this
     }
 
     double calculateQuota(double excess) {
@@ -50,13 +54,16 @@ class Election {
 
             def stv = new Election(positions)
 
-            candidates.times { 
-                stv.addCandidate("Candidate $it") // use a temporary name at first. real names are at the end of the file
+            candidates.times {
+                /* Use a temporary name at first. 
+                 * Real names are at the end of the file
+                 */
+                stv << new Candidate(name: "Candidate $it")
             }
 
             use(IteratorCategory) {
                 reader.iterator().while { line -> line != '0' }.call { line ->
-                    stv.addVote Vote.fromLine(line, stv)
+                    stv << Vote.fromLine(line, stv)
                 }.upto(candidates) { line, i -> 
                     stv.candidates.get(i).name = line 
                 }
