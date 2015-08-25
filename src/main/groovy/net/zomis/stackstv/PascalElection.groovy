@@ -128,6 +128,7 @@ class PascalElection implements ElectionStrategy {
         List<Election.Candidate> newlyElected = []
         election.candidates.each {
             if (it.state == Election.CandidateState.ALMOST) {
+                println 'Elected ' + it
                 it.state = Election.CandidateState.NEWLY_ELECTED
                 newlyElected << it
             }

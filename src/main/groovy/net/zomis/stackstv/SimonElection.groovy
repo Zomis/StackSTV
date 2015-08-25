@@ -25,6 +25,7 @@ class SimonElection implements ElectionStrategy {
             elected.each {
                 if (it.state != Election.CandidateState.ELECTED) {
                     electedCount++
+                    println 'Elected ' + it
                 }
                 it.state = Election.CandidateState.ELECTED
                 it.weighting *= roundQuota / it.votes

@@ -36,6 +36,7 @@ class ElectionTest {
         def result = runElection(fileName)
 
         def elected = result.getCandidates(Election.CandidateState.ELECTED)
+        println elected
         assert elected.size() == 4
         ResultExport.export(new File(new File('output'), fileName + '.html'), fileName, result)
 //        assert elected.stream().map({it.name}).toArray() == ['"meagar"', '"Martijn Pieters"', '"Jeremy Banks"']
